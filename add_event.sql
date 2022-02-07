@@ -60,6 +60,7 @@ BEGIN
 END;
 $Body$;
 end;
+
 SELECT *
 from add_event(1, 1, 'New event', 'Event has added from function',
                '2022-03-01'::date,
@@ -67,3 +68,10 @@ from add_event(1, 1, 'New event', 'Event has added from function',
                '13:00'::time,
                '13:30'::time,
                ARRAY [['frequency', '2'],['count', '3'],['interval', '3']]);
+SELECT *
+from add_event(1, 1, 'Second event', 'Event has added from function x2',
+               '2021-03-01'::date,
+               '2021-03-06'::date,
+               '09:00'::time,
+               '12:30'::time,
+               ARRAY [['until', '2021-03-06'],['count', '3'],['interval', '1']]);
