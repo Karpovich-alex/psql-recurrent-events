@@ -62,24 +62,23 @@ VALUES (1, 'frequency'),
        (7, 'by_month_day');
 INSERT INTO calendar (id, title)
 VALUES (1, 'First calendar');
-INSERT INTO event (id, calendar_id, title)
-VALUES (1, 1, 'event_1'),
+INSERT INTO event (id, calendar_id, title, start_date, end_date, start_time, end_time)
+VALUES (1, 1, 'event_1', 01 - 02 - 2022, 06 - 02 - 2022, 1100, 1230),
        (2, 1, 'event_2');
 INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
 VALUES (1, 1, 1, 'weekly'),
        (1, 1, 2, '3'),
        (1, 1, 4, 2);
+INSERT INTO users (id, username)
+VALUES (1, 'first user'),
+       (2, 'second user'),
+       (3, 'third user');
+INSERT INTO users_calendar (user_id, calendar_id)
+VALUES (1, 1);
 
-SELECT event.id, event.title, json_object_agg(name, parameter_value)
-FROM event
-         LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
-                   on event.id = params.event_id and event.calendar_id = params.calendar_id
-WHERE name IS NOT NULL
-GROUP BY event.id, event.calendar_id;
-
-SELECT event.id, event.title, json_agg(name)
-FROM event
-         LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
-                   on event.id = params.event_id and event.calendar_id = params.calendar_id
-WHERE name IS NOT NULL
-GROUP BY event.id, event.calendar_id;
+UPDATE event
+SET start_date='2022-02-01'::date,
+    end_date='2022-02-06'::date,
+    start_time='11:00'::time,
+    end_time='12:30'::time
+WHERE id = 1;
