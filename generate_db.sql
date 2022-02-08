@@ -30,7 +30,8 @@ CREATE TABLE event
 CREATE TABLE parameters
 (
     id   SERIAL PRIMARY KEY,
-    name text NOT NULL
+    name text NOT NULL,
+    type text NOT NULL
 );
 CREATE TABLE pattern
 (
@@ -52,14 +53,14 @@ CREATE TABLE exception_event
     end_time    time,
     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
 );
-INSERT INTO parameters (name)
-VALUES ('frequency'),
-       ('count'),
-       ('until'),
-       ('interval'),
-       ('by_day'),
-       ('by_month'),
-       ('by_month_day');
+INSERT INTO parameters (name, type)
+VALUES ('frequency', 'integer'),
+       ('count', 'integer'),
+       ('until', 'date'),
+       ('interval', 'integer'),
+       ('by_day', 'integer[]'),
+       ('by_month', 'integer[]'),
+       ('by_month_day', 'integer[]');
 INSERT INTO calendar (title)
 VALUES ('First calendar');
 INSERT INTO event (calendar_id, title, start_date, end_date, start_time, end_time)

@@ -21,7 +21,7 @@ DECLARE
     calendar_ids users_calendar.calendar_id%type;
     event_id     event.id%type := -1;
 BEGIN
-    -- Проверяем доступность календаря пользователю
+    -- Check if a calendar is available to a user
     SELECT uc.calendar_id
     INTO calendar_ids
     from users
@@ -30,10 +30,10 @@ BEGIN
       and uc.calendar_id = $2;
     IF not FOUND
     THEN
-        RAISE EXCEPTION 'User with id: % doesnt have Calendar with id %', user_id, calendar_id;
+        RAISE EXCEPTION 'User #% doesnt have Calendar #%', user_id, calendar_id;
     ELSE
-        RAISE NOTICE 'Calendar %  exists', calendar_ids;
-        -- Добавляем событие в календарь
+--         RAISE NOTICE 'Calendar %  exists', calendar_ids;
+        -- Add event to the calendar
         INSERT INTO event (calendar_id, title, description, start_date, end_date, start_time, end_time)
         VALUES (calendar_id,
                 e_title,
@@ -43,9 +43,9 @@ BEGIN
                 start_time,
                 end_time)
         RETURNING id INTO event_id;
-        RAISE NOTICE 'Event % inserted', event_id;
-        RAISE NOTICE 'Params: %', params;
-        -- Добавляем параметры к событию
+--         RAISE NOTICE 'Event % inserted', event_id;
+--         RAISE NOTICE 'Params: %', params;
+        -- Add parameters for the event
         INSERT INTO pattern
         SELECT event_id, calendar_id, id, value #>> '{}'
         FROM parameters as p
@@ -57,7 +57,7 @@ END;
 $Body$;
 end;
 
--- Ошибка, так как у пользователя нет такого календаря!
+-- Error, the user does not have this calendar!
 SELECT *
 from add_event(1, 2, 'New event', 'Event has added from function',
                '2022-03-01'::date,

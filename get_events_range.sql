@@ -1,4 +1,4 @@
-DROP FUNCTION recurring_events_for();
+DROP FUNCTION IF EXISTS recurring_events_for();
 CREATE OR REPLACE FUNCTION recurring_events_for(
   range_start timestamptz,
   range_end  timestamptz
