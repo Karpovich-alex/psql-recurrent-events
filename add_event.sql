@@ -1,6 +1,3 @@
-DROP FUNCTION IF EXISTS add_event(integer, integer, text, text, date, date, time without time zone,
-                                  time without time zone,
-                                  text[]);
 -- Add event and returns new event id
 CREATE OR REPLACE FUNCTION add_event(
     user_id integer,
