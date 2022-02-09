@@ -17,14 +17,15 @@ CREATE TABLE users_calendar
 );
 CREATE TABLE event
 (
-    id          SERIAL,
-    calendar_id integer REFERENCES calendar (id),
-    title       text NOT NULL,
-    description text,
-    start_date  date,
-    end_date    date,
-    start_time  time,
-    end_time    time,
+    id             SERIAL,
+    calendar_id    integer REFERENCES calendar (id),
+    title          text NOT NULL,
+    description    text,
+    dt_start       timestamp,
+    dt_end         timestamp,
+    dt_frame_start timestamp,
+    dt_frame_end   timestamp,
+    duration       interval GENERATED ALWAYS AS (dt_end - dt_start) STORED,
     PRIMARY KEY (id, calendar_id)
 );
 CREATE TABLE parameters
@@ -58,14 +59,14 @@ VALUES ('frequency', 'integer'),
        ('count', 'integer'),
        ('until', 'date'),
        ('interval', 'integer'),
-       ('by_day', 'integer[]'),
+       ('by_day', 'text[]'),
        ('by_month', 'integer[]'),
        ('by_month_day', 'integer[]');
 INSERT INTO calendar (title)
 VALUES ('First calendar');
-INSERT INTO event (calendar_id, title, start_date, end_date, start_time, end_time)
-VALUES (1, 'event_1', '2022-02-01'::date, '2022-02-06'::date, '11:00'::time, '12:30'::time),
-       (1, 'event_2', '2022-01-01'::date, '2022-01-06'::date, '09:00'::time, '11:20'::time);
+INSERT INTO event (calendar_id, title, dt_start, dt_end)
+VALUES (1, 'event_1', '2022-02-01 11:00'::timestamp, '2022-02-06 12:30'::timestamp),
+       (1, 'event_2', '2022-01-01 09:00'::timestamp, '2022-01-06 11:20'::timestamp);
 INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
 VALUES (1, 1, 1, 'weekly'),
        (1, 1, 2, '3'),

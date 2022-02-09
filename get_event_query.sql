@@ -1,5 +1,5 @@
--- Get events with parameters
-SELECT event.id, event.title, json_object_agg(name, parameter_value) as parameters
+-- Get events with parameters in json
+SELECT event.id, event.title, event.dt_start, event.dt_end, json_object_agg(name, parameter_value) as parameters
 FROM event
          LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
                    on event.id = params.event_id and event.calendar_id = params.calendar_id

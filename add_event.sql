@@ -1,13 +1,12 @@
 -- Add event and returns new event id
+
 CREATE OR REPLACE FUNCTION add_event(
     user_id integer,
     calendar_id integer,
     e_title text,
     e_description text,
-    start_date date,
-    end_date date,
-    start_time time,
-    end_time time,
+    dt_start timestamp,
+    dt_end timestamp,
     params json
 )
     RETURNS integer
@@ -29,19 +28,14 @@ BEGIN
     THEN
         RAISE EXCEPTION 'User #% doesnt have Calendar #%', user_id, calendar_id;
     ELSE
---         RAISE NOTICE 'Calendar %  exists', calendar_ids;
         -- Add event to the calendar
-        INSERT INTO event (calendar_id, title, description, start_date, end_date, start_time, end_time)
+        INSERT INTO event (calendar_id, title, description, dt_start, dt_end)
         VALUES (calendar_id,
                 e_title,
                 e_description,
-                start_date,
-                end_date,
-                start_time,
-                end_time)
+                dt_start,
+                dt_end)
         RETURNING id INTO event_id;
---         RAISE NOTICE 'Event % inserted', event_id;
---         RAISE NOTICE 'Params: %', params;
         -- Add parameters for the event
         INSERT INTO pattern
         SELECT event_id, calendar_id, id, value #>> '{}'
@@ -57,10 +51,8 @@ end;
 -- Error, the user does not have this calendar!
 SELECT *
 from add_event(1, 2, 'New event', 'Event has added from function',
-               '2022-03-01'::date,
-               '2022-03-06'::date,
-               '13:00'::time,
-               '13:30'::time,
+               '2022-03-01 13:00'::timestamp,
+               '2022-03-06 13:30'::timestamp,
                '{
                  "frequency": "2",
                  "count": "2",
@@ -69,10 +61,8 @@ from add_event(1, 2, 'New event', 'Event has added from function',
 
 SELECT *
 from add_event(1, 1, 'New event', 'Event has added from function',
-               '2022-03-01'::date,
-               '2022-03-06'::date,
-               '13:00'::time,
-               '13:30'::time,
+               '2022-03-01 13:00'::timestamp,
+               '2022-03-06 13:30'::timestamp,
                '{
                  "frequency": "2",
                  "count": "2",
@@ -81,10 +71,8 @@ from add_event(1, 1, 'New event', 'Event has added from function',
                }'::json);
 SELECT *
 from add_event(1, 1, 'Second event', 'Event has added from function x2',
-               '2021-03-01'::date,
-               '2021-03-06'::date,
-               '09:00'::time,
-               '12:30'::time,
+               '2021-03-01 09:00'::timestamp,
+               '2021-03-06 12:30'::timestamp,
                '{
                  "until": "2021-03-06",
                  "count": "3",
