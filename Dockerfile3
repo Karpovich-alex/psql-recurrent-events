@@ -1,0 +1,21 @@
+FROM postgres:14
+
+RUN apt-get update \
+	&& apt-get install -y \
+    git
+RUN apt install wget
+RUN apt install qt5-default
+
+#RUN TEMP_DEB="$(mktemp)" \
+#&& wget -O "$TEMP_DEB" 'http://ftp.ru.debian.org/debian/pool/main/q/qtbase-opensource-src/qt5-default_5.11.3+dfsg1-1+deb10u4_amd64.deb' \
+#&& dpkg -i "$TEMP_DEB" \
+#&& rm -f "$TEMP_DEB"
+
+RUN git clone https://github.com/petropavel13/pg_rrule.git
+WORKDIR pg_rrule
+
+RUN qmake-qt4 ./pg_rrule.pro \
+ && make
+RUN cp libpg_rrule.so /usr/lib/postgresql/${PG_MAJOR}/lib/pg_rrule.so \
+ && cp ../pg_rrule.control /usr/share/postgresql/${PG_MAJOR}/extension \
+ && cp ../sql/pg_rrule.sql.in /usr/share/postgresql/${PG_MAJOR}/extension/pg_rrule--0.2.0.sql

@@ -1,0 +1,32 @@
+FROM theshadowx/qt5 as build
+
+RUN git clone https://github.com/petropavel13/pg_rrule.git
+WORKDIR pg_rrule
+
+RUN apt-get update
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN	 apt-get install -y \
+    libical-dev \
+     wget
+
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'\
+   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
+  && apt-get update
+
+RUN apt-get -y install postgresql-server-dev-14
+
+RUN qmake ./src/pg_rrule.pro \
+ && make
+
+RUN apt-get -y install postgresql
+
+
+#WORKDIR pg_rrule
+#
+RUN mkdir /usr/lib/postgresql/${PG_MAJOR}/lib
+RUN cp ./libpg_rrule.so /usr/lib/postgresql/${PG_MAJOR}/lib/pg_rrule.so
+RUN cp ./pg_rrule.control /usr/share/postgresql/${PG_MAJOR}/extension
+RUN cp ./sql/pg_rrule.sql.in /usr/share/postgresql/14/extension/pg_rrule--0.2.0.sql
+
+CMD bash
