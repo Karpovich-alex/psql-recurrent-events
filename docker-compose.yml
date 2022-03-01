@@ -1,7 +1,10 @@
    version: "3"
    services:
      db:
-       image: postgres
+       build:
+        dockerfile: Dockerfile
+#       image: postgres
+       container_name: database
        environment:
          - POSTGRES_USER=postgres
          - POSTGRES_PASSWORD=postgress
