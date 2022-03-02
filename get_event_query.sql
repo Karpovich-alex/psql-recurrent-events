@@ -1,18 +1,44 @@
 -- Get events with parameters in json
-SELECT event.id, event.title, event.dt_start, event.dt_end, json_object_agg(name, parameter_value) as parameters
+SELECT event.id,
+       event.title,
+       event.dt_start,
+       event.dt_end,
+       json_object_agg(UPPER(name), UPPER(parameter_value)) ->> 0 as parameters
 FROM event
          LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
-                   on event.id = params.eventid and event.calendar_id = params.calendar_id
+                   on event.id = params.event_id and event.calendar_id = params.calendar_id
 WHERE name IS NOT NULL
 GROUP BY event.id, event.calendar_id;
 
-SELECT event.id, event.title, json_agg(name)
+SELECT event.id,
+       event.title,
+       event.dt_start,
+       event.dt_end,
+       STRING_AGG(UPPER(name) || '=' || UPPER(parameter_value), ';') as parameters
 FROM event
          LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
-                   on event.id = params.eventid and event.calendar_id = params.calendar_id
+                   on event.id = params.event_id and event.calendar_id = params.calendar_id
 WHERE name IS NOT NULL
 GROUP BY event.id, event.calendar_id;
 
+SELECT sq.id                     as e_id,
+       sq.title                  as e_title,
+       sq.dt_start               as e_dt_start,
+       sq.dt_start + sq.duration as e_dt_end
+FROM (
+         SELECT event.id,
+                event.title,
+                unnest(get_occurrences(STRING_AGG(UPPER(name) || '=' || UPPER(parameter_value), ';')::text,
+                                       event.dt_start)) as
+                                                           dt_start,
+                event.duration                          as duration
+         FROM event
+                  LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
+                            on event.id = params.event_id and event.calendar_id = params.calendar_id
+         WHERE name IS NOT NULL
+         GROUP BY event.id, event.calendar_id) as sq
+WHERE '2019-01-01 11:00'::timestamp <= sq.dt_start
+  AND sq.dt_start + sq.duration <= '2022-03-05 23:30'::timestamp;
 
 -- Get users and calendars
 SELECT username, c.id calendar_id, c.title, c.description
@@ -20,63 +46,59 @@ FROM users
          LEFT JOIN users_calendar uc on users.id = uc.user_id
          LEFT JOIN calendar c on uc.calendar_id = c.id;
 
-DROP FUNCTION get_event(integer, integer, timestamp without time zone, timestamp without time zone);
+DROP FUNCTION get_events_from_range(integer, integer, timestamp without time zone, timestamp without time zone);
 
-CREATE OR REPLACE FUNCTION get_event(
+CREATE OR REPLACE FUNCTION get_events_from_range(
     user_id integer,
     calendar_id integer,
-    dt_start timestamp,
-    dt_end timestamp
+    frame_dt_start timestamp,
+    frame_dt_end timestamp
 )
-    RETURNS TABLE (event_id integer,e_calendar_id integer,dt timestamp)
+    RETURNS TABLE
+            (
+                e_id          integer,
+                e_calendar_id integer,
+                e_title       text,
+                e_dt_start    timestamp,
+                e_dt_end      timestamp
+            )
     LANGUAGE plpgsql
 AS
 $Body$
 DECLARE
-    event record;
+    user_id alias for $1;
+    calendar_id alias for $2;
+    frame_dt_start alias for $3;
+    frame_dt_end alias for $4;
+
 BEGIN
     -- Check if a calendar is available to a user
-
     PERFORM check_user_calendar(user_id, calendar_id);
-    FOR event in SELECT e.id,
-                         e.title,
-                         e.description,
-                         e.dt_start,
-                         e.dt_end,
-                         json_object_agg(name, parameter_value) as parameters
-                  FROM event as e
-                           LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
-                                     on e.id = params.event_id
-                  WHERE name IS NOT NULL
-                    and e.dt_frame_end > $3
-                    and e.dt_frame_start < $4
-                  GROUP BY e.id
-        LOOP
-            IF event.description IS NOT NULL THEN
-                RETURN NEXT (event.id, calendar_id, dt_start);
-            end if;
 
-            RAISE NOTICE '#%, %', event.id, event.title;
-        end loop;
+    RETURN QUERY SELECT events.*
+                 FROM (SELECT sq.id                     as e_id,
+                              calendar_id               as e_calendar_id,
+                              sq.title                  as e_title,
+                              sq.dt_start               as e_dt_start,
+                              sq.dt_start + sq.duration as e_dt_end
+                       FROM (
+                                SELECT event.id,
+                                       event.title,
+                                       unnest(get_occurrences(
+                                               STRING_AGG(UPPER(name) || '=' || UPPER(parameter_value), ';')::text,
+                                               event.dt_start)) as
+                                                                   dt_start,
+                                       event.duration           as duration
+                                FROM event
+                                         LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
+                                                   on event.id = params.event_id and event.calendar_id = params.calendar_id
+                                WHERE name IS NOT NULL
+                                GROUP BY event.id, event.calendar_id) as sq) as events
+                 WHERE frame_dt_start <= events.e_dt_start
+                   AND events.e_dt_end <= frame_dt_end AND events.e_dt_start NOT IN ;
 END ;
 $Body$;
 end;
 
 SELECT *
-FROM get_event(1, 1, '2020-01-01 11:00'::timestamp, '2022-02-06 23:30'::timestamp);
-
-SELECT e.id,
-       e.calendar_id,
-       e.title,
-       e.dt_start,
-       e.dt_end,
-       json_object_agg(name, parameter_value) as parameters
-FROM event as e
-         LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
-                   on e.id = params.eventid and e.calendar_id = params.calendar_id
-WHERE name IS NOT NULL
-  and e.dt_frame_end > '2020-01-01'::timestamp
-  and e.dt_frame_start < '2022-12-06'::timestamp
-GROUP BY e.id, e.calendar_id;
-
-CREATE EXTENSION pg_rrul;
+FROM get_events_from_range(1, 1, '2019-01-01 11:00'::timestamp, '2022-12-06 23:30'::timestamp);

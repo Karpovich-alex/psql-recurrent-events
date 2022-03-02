@@ -1,17 +1,15 @@
-   version: "3"
-   services:
-     db:
-       build:
-        dockerfile: Dockerfile
-#       image: postgres
-       container_name: database
-       environment:
-         - POSTGRES_USER=postgres
-         - POSTGRES_PASSWORD=postgress
-         - POSTGRES_DB=postgres
-       ports:
-         - "5432:5432"
-       volumes:
-         - pgdata:/var/lib/postgresql/data
-   volumes:
-     pgdata:
+version: "3"
+services:
+  db:
+    build: .
+    container_name: database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgress
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

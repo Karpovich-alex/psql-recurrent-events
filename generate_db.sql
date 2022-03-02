@@ -55,13 +55,17 @@ CREATE TABLE exception_event
     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
 );
 INSERT INTO parameters (name, type)
-VALUES ('frequency', 'integer'),
+VALUES ('freq', 'integer'),
        ('count', 'integer'),
        ('until', 'date'),
        ('interval', 'integer'),
-       ('by_day', 'text[]'),
-       ('by_month', 'integer[]'),
-       ('by_month_day', 'integer[]');
+       ('bysecond', 'integer[]'),
+       ('byminute', 'integer[]'),
+       ('byhour', 'integer[]'),
+       ('byday', 'text[]'),
+       ('bmonth', 'integer[]'),
+       ('by_month_day', 'integer[]'),
+       ('wkst', 'text[]');
 INSERT INTO calendar (title)
 VALUES ('First calendar');
 INSERT INTO event (calendar_id, title, dt_start, dt_end)
