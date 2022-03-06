@@ -45,13 +45,10 @@ CREATE TABLE pattern
 );
 CREATE TABLE exception_event
 (
-    id          integer PRIMARY KEY,
     event_id    integer NOT NULL,
     calendar_id integer NOT NULL,
-    start_date  date,
-    end_date    date,
-    start_time  time,
-    end_time    time,
+    dt_start  timestamp,
+    CONSTRAINT exception_event_pkey PRIMARY KEY (event_id, calendar_id),
     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
 );
 INSERT INTO parameters (name, type)

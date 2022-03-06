@@ -95,7 +95,11 @@ BEGIN
                                 WHERE name IS NOT NULL
                                 GROUP BY event.id, event.calendar_id) as sq) as events
                  WHERE frame_dt_start <= events.e_dt_start
-                   AND events.e_dt_end <= frame_dt_end AND events.e_dt_start NOT IN ;
+                   AND events.e_dt_end <= frame_dt_end
+                   AND events.e_dt_start NOT IN (SELECT dt_start
+                                                 FROM exception_event as ex_e
+                                                 WHERE ex_e.event_id = events.e_id
+                                                   AND ex_e.calendar_id = events.e_calendar_id);
 END ;
 $Body$;
 end;
