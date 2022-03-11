@@ -66,7 +66,7 @@ VALUES ('freq', 'integer'),
 INSERT INTO calendar (title)
 VALUES ('First calendar');
 INSERT INTO event (calendar_id, title, dt_start, dt_end)
-VALUES (1, 'event_1', '2022-02-01 11:00'::timestamp, '2022-02-06 12:30'::timestamp),
+VALUES (1, 'event_1', '2022-02-01 11:00'::timestamp, '2022-03-06 12:30'::timestamp),
        (1, 'event_2', '2022-01-01 09:00'::timestamp, '2022-01-06 11:20'::timestamp);
 INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
 VALUES (1, 1, 1, 'weekly'),

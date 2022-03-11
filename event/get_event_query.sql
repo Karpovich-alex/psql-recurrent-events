@@ -29,22 +29,33 @@ FROM (
          SELECT event.id,
                 event.title,
                 unnest(get_occurrences(STRING_AGG(UPPER(name) || '=' || UPPER(parameter_value), ';')::text,
-                                       event.dt_start)) as
-                                                           dt_start,
-                event.duration                          as duration
+                                       event.dt_start, event.dt_end)) as
+                                                                         dt_start,
+                event.duration                                        as duration
          FROM event
                   LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
                             on event.id = params.event_id and event.calendar_id = params.calendar_id
          WHERE name IS NOT NULL
-         GROUP BY event.id, event.calendar_id) as sq
-WHERE '2019-01-01 11:00'::timestamp <= sq.dt_start
-  AND sq.dt_start + sq.duration <= '2022-03-05 23:30'::timestamp;
+         GROUP BY event.id, event.calendar_id) as sq;
 
 -- Get users and calendars
 SELECT username, c.id calendar_id, c.title, c.description
 FROM users
          LEFT JOIN users_calendar uc on users.id = uc.user_id
          LEFT JOIN calendar c on uc.calendar_id = c.id;
+-- STRING_AGG(UPPER(json_obj->1) || '=' || UPPER(json_obj->2), ';')::text
+DROP FUNCTION get_rrule_from_json(jsonb);
+CREATE OR REPLACE FUNCTION get_rrule_from_json(rrule jsonb)
+    RETURNS text
+    LANGUAGE plpgsql
+AS
+$Body$
+BEGIN
+    RETURN (SELECT STRING_AGG(UPPER(jsn.key) || '=' || UPPER(jsn.value), ';')::text
+            FROM (SELECT 1 as grouper, * FROM jsonb_each_text(rrule)) as jsn
+            GROUP BY grouper);
+END;
+$Body$;
 
 DROP FUNCTION get_events_from_range(integer, integer, timestamp without time zone, timestamp without time zone);
 
@@ -86,23 +97,20 @@ BEGIN
                                        event.title,
                                        unnest(get_occurrences(
                                                STRING_AGG(UPPER(name) || '=' || UPPER(parameter_value), ';')::text,
-                                               event.dt_start)) as
-                                                                   dt_start,
-                                       event.duration           as duration
+                                               event.dt_start, event.dt_end)) as
+                                                                                 dt_start,
+                                       event.duration                         as duration
                                 FROM event
                                          LEFT JOIN (pattern pat LEFT JOIN parameters par on pat.parameter_id = par.id) as params
                                                    on event.id = params.event_id and event.calendar_id = params.calendar_id
                                 WHERE name IS NOT NULL
                                 GROUP BY event.id, event.calendar_id) as sq) as events
-                 WHERE frame_dt_start <= events.e_dt_start
-                   AND events.e_dt_end <= frame_dt_end
-                   AND events.e_dt_start NOT IN (SELECT dt_start
+                 WHERE events.e_dt_start NOT IN (SELECT dt_start
                                                  FROM exception_event as ex_e
                                                  WHERE ex_e.event_id = events.e_id
                                                    AND ex_e.calendar_id = events.e_calendar_id);
 END ;
 $Body$;
-end;
 
 SELECT *
 FROM get_events_from_range(1, 1, '2019-01-01 11:00'::timestamp, '2022-12-06 23:30'::timestamp);
