@@ -45,10 +45,11 @@ CREATE TABLE pattern
 );
 CREATE TABLE exception_event
 (
+    id          SERIAL PRIMARY KEY,
     event_id    integer NOT NULL,
     calendar_id integer NOT NULL,
     dt_start    timestamp,
-    CONSTRAINT exception_event_pkey PRIMARY KEY (event_id, calendar_id),
+    dt_end      timestamp,
     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
 );
 INSERT INTO parameters (name, type)
@@ -60,7 +61,7 @@ VALUES ('freq', 'integer'),
        ('byminute', 'integer[]'),
        ('byhour', 'integer[]'),
        ('byday', 'text[]'),
-       ('bmonth', 'integer[]'),
+       ('bymonth', 'integer[]'),
        ('by_month_day', 'integer[]'),
        ('wkst', 'text[]');
 
