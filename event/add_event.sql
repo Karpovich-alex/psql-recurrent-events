@@ -14,15 +14,14 @@ CREATE OR REPLACE FUNCTION add_event(
 AS
 $Body$
 DECLARE
-    event_id       event.id%type := -1;
-    dt_frame_start timestamp;
-    dt_frame_end   timestamp;
+    event_id event.id%type := -1;
+    dt_frame timestamp[2];
 BEGIN
     -- Check if a calendar is available to a user
     PERFORM check_user_calendar(user_id, calendar_id);
     -- Get dt_frame start and end
-    SELECT * INTO dt_frame_start, dt_frame_end FROM unnest(get_dt_frame(dt_start, dt_end, params));
-    RAISE NOTICE 'end: %', dt_frame_end;
+    SELECT * FROM get_dt_frame(dt_start, dt_end, params) INTO dt_frame;
+    RAISE NOTICE 'end: %', dt_frame[2];
     -- Add event to the calendar
     INSERT INTO event (calendar_id, title, description, dt_start, dt_end, dt_frame_start, dt_frame_end)
     VALUES (calendar_id,
@@ -30,8 +29,8 @@ BEGIN
             e_description,
             dt_start,
             dt_end,
-            dt_frame_start,
-            dt_frame_end)
+            dt_frame[1],
+            dt_frame[2])
     RETURNING id INTO event_id;
     -- Add parameters for the event
     INSERT INTO pattern
