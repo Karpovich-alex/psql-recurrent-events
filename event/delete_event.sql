@@ -11,7 +11,6 @@ BEGIN
     DELETE FROM pattern pat WHERE pat.event_id = $3;
     DELETE FROM event ev WHERE ev.id = $3;
 
-
     RETURN event_id;
 END;
 $Body$;

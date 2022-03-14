@@ -26,6 +26,7 @@ CREATE TABLE event
     dt_frame_start timestamp,
     dt_frame_end   timestamp,
     duration       interval GENERATED ALWAYS AS (dt_end - dt_start) STORED,
+    rrule text,
     PRIMARY KEY (id, calendar_id)
 );
 CREATE TABLE parameters
@@ -40,7 +41,7 @@ CREATE TABLE pattern
     calendar_id     integer                            NOT NULL,
     parameter_id    integer REFERENCES parameters (id) NOT NULL,
     parameter_value text                               NOT NULL,
-    CONSTRAINT pattern_pkey PRIMARY KEY (event_id, calendar_id, parameter_id),
+    CONSTRAINT pattern_pkey PRIMARY KEY (event_id, calendar_id, parameter_id, parameter_value),
     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
 );
 CREATE TABLE exception_event

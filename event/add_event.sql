@@ -21,22 +21,21 @@ BEGIN
     PERFORM check_user_calendar(user_id, calendar_id);
     -- Get dt_frame start and end
     SELECT * FROM get_dt_frame(dt_start, dt_end, params) INTO dt_frame;
-    RAISE NOTICE 'end: %', dt_frame[2];
     -- Add event to the calendar
-    INSERT INTO event (calendar_id, title, description, dt_start, dt_end, dt_frame_start, dt_frame_end)
+    INSERT INTO event (calendar_id, title, description, dt_start, dt_end, dt_frame_start, dt_frame_end, rrule)
     VALUES (calendar_id,
             e_title,
             e_description,
             dt_start,
             dt_end,
             dt_frame[1],
-            dt_frame[2])
+            dt_frame[2],
+            get_rrule_from_jsonb(params))
     RETURNING id INTO event_id;
     -- Add parameters for the event
-    INSERT INTO pattern
-    SELECT event_id, calendar_id, id, value #>> '{}'
-    FROM parameters as p
-             JOIN jsonb_each(params) params ON params.key = p.name;
+    INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
+    SELECT event_id, calendar_id, id, parameter_value
+    FROM get_parameters(params);
 
     RETURN event_id;
 END;

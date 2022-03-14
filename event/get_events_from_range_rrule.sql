@@ -1,6 +1,6 @@
-DROP FUNCTION get_events_from_range(integer, integer, timestamp without time zone, timestamp without time zone);
+DROP FUNCTION get_events_from_range_rrule(integer, integer, timestamp without time zone, timestamp without time zone);
 
-CREATE OR REPLACE FUNCTION get_events_from_range(
+CREATE OR REPLACE FUNCTION get_events_from_range_rrule(
     user_id integer,
     e_calendar_id integer,
     e_frame_dt_start timestamp,
@@ -37,13 +37,15 @@ BEGIN
                                 SELECT event.id,
                                        event.title,
                                        unnest(get_occurrences(
-                                               get_rrule_for_event(event.id, e_calendar_id),
-                                               event.dt_start, e_frame_dt_end)) as dt_start,
+                                               event.rrule,
+                                               event.dt_start, e_frame_dt_end)) as
+                                                                                   dt_start,
                                        event.duration                           as duration
                                 FROM event
-                                WHERE event.dt_start <= e_frame_dt_end
+                                WHERE rrule IS NOT NULL
                                   AND event.dt_frame_end >= e_frame_dt_start
                                   AND event.dt_frame_start <= e_frame_dt_end
+                                  AND event.dt_start <= e_frame_dt_end
                                 GROUP BY event.id, event.calendar_id) as sq) as events
                           FULL JOIN exception_event ex_e
                                     ON events.id = ex_e.event_id
