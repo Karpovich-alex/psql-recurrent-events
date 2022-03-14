@@ -14,6 +14,21 @@ SELECT get_rrule_from_jsonb('{
   "freq": "WEEKLY",
   "count": "2",
   "interval": "3"
-}'::jsonb)
+}'::jsonb);
 
--- DROP FUNCTION get_rrule_from_jsonb(jsonb);
+SELECT get_rrule_from_jsonb('{
+  "until": "2021-03-06",
+  "count": "3",
+  "interval": "1",
+  "byday": [
+    "SU",
+    "MO",
+    "TU",
+    "WE",
+    "TH",
+    "FR",
+    "SA"
+  ]
+}'::jsonb);
+
+SELECT * FROM get_rrule_for_event(14,1)
