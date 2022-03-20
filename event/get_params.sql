@@ -14,15 +14,16 @@ BEGIN
                  FROM parameters as p
                           JOIN (
                      SELECT key,
-                            CAST(CASE
-                                     WHEN (value -> 1) IS NOT NULL
-                                         THEN (value)
-                                     ELSE to_jsonb(array [value])
-                                END AS jsonb) as value_
+                            (CASE jsonb_typeof(value)
+                                 WHEN 'string'
+                                     THEN to_jsonb(array [value])
+                                 ELSE (value)
+                                END) as value_
                      FROM jsonb_each(params)) as sq ON sq.key = p.name;
 END;
 $Body$;
 end;
+
 DROP FUNCTION unnest_parameters(jsonb);
 
 CREATE OR REPLACE FUNCTION unnest_parameters(params jsonb)

@@ -13,3 +13,11 @@ FROM unnest_parameters('{
     "SA"
   ]
 }'::jsonb);
+
+SELECT *
+FROM get_parameters('{
+  "byday": [
+    "TH",
+    "MO"
+  ]
+}'::jsonb);
