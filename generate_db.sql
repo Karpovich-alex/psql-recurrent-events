@@ -1,11 +1,13 @@
 INSERT INTO calendar (title)
-VALUES ('First calendar');
+VALUES ('First calendar'),
+       ('Second calendar');
 INSERT INTO users (username)
 VALUES ('first user'),
        ('second user'),
        ('third user');
 INSERT INTO users_calendar (user_id, calendar_id)
-VALUES (1, 1);
+VALUES (1, 1),
+       (1, 2);
 
 SELECT add_event(1, 1, 'First event', '', '19980101T090000'::timestamp, '19980101T103000'::timestamp, '{
   "freq": "YEARLY",
