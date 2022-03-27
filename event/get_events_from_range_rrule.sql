@@ -34,19 +34,18 @@ BEGIN
                               sq.dt_start               as dt_start,
                               sq.dt_start + sq.duration as dt_end
                        FROM (
-                                SELECT event.id,
-                                       event.title,
+                                SELECT event.id as id,
+                                       event.title as title,
                                        unnest(get_occurrences(
-                                               event.rrule,
-                                               event.dt_start, e_frame_dt_end)) as
-                                                                                   dt_start,
+                                               get_rrule_from_jsonb(event.rrule_json),
+                                               event.dt_start, e_frame_dt_end)) as dt_start,
                                        event.duration                           as duration
                                 FROM event
-                                WHERE rrule IS NOT NULL
-                                  AND event.dt_frame_end >= e_frame_dt_start
+                                WHERE event.dt_frame_end >= e_frame_dt_start
                                   AND event.dt_frame_start <= e_frame_dt_end
                                   AND event.dt_start <= e_frame_dt_end
-                                GROUP BY event.id, event.calendar_id) as sq) as events
+                                GROUP BY event.id, event.calendar_id) as sq
+                     ) as events
                           FULL JOIN exception_event ex_e
                                     ON events.id = ex_e.event_id
                                         AND events.dt_end >= e_frame_dt_start

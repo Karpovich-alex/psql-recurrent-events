@@ -3,8 +3,8 @@
 CREATE OR REPLACE FUNCTION add_event(
     user_id integer,
     calendar_id integer,
-    e_title text,
-    e_description text,
+    title text,
+    description text,
     dt_start timestamp,
     dt_end timestamp,
     params jsonb
@@ -14,28 +14,30 @@ CREATE OR REPLACE FUNCTION add_event(
 AS
 $Body$
 DECLARE
-    event_id event.id%type := -1;
-    dt_frame timestamp[2];
+    user_id alias for $1;
+    calendar_id alias for $2;
+    title alias for $3;
+    description alias for $4;
+    dt_start alias for $5;
+    dt_end alias for $6;
+    params alias for $7;
+    event_id       event.id%type := -1;
+    dt_frame_start timestamp;
+    dt_frame_end   timestamp;
 BEGIN
     -- Check if a calendar is available to a user
     PERFORM check_user_calendar(user_id, calendar_id);
-    -- Get dt_frame start and end
-    SELECT * FROM get_dt_frame(dt_start, dt_end, params) INTO dt_frame;
+    -- Validate rrule
+    SELECT validate_rrule(params) INTO params;
     -- Add event to the calendar
-    INSERT INTO event (calendar_id, title, description, dt_start, dt_end, dt_frame_start, dt_frame_end, rrule)
+    INSERT INTO event (calendar_id, title, description, dt_start, dt_end, rrule_json)
     VALUES (calendar_id,
-            e_title,
-            e_description,
+            title,
+            description,
             dt_start,
             dt_end,
-            dt_frame[1],
-            dt_frame[2],
-            get_rrule_from_jsonb(params))
+            params)
     RETURNING id INTO event_id;
-    -- Add parameters for the event
-    INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
-    SELECT event_id, calendar_id, id, parameter_value
-    FROM get_parameters(params);
 
     RETURN event_id;
 END;

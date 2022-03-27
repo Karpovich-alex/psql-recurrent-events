@@ -1,73 +1,77 @@
-CREATE OR REPLACE FUNCTION delete_event_params(user_id int, calendar_id int, event_id int, params jsonb)
+CREATE OR REPLACE FUNCTION update_event_params(user_id int, calendar_id int, event_id int, params jsonb)
     RETURNS integer
     LANGUAGE plpgsql
 AS
 $Body$
 DECLARE
+    e_user_id alias for $1;
+    e_calendar_id alias for $2;
+    e_event_id alias for $3;
+    params alias for $4;
+    new_rrule_json jsonb;
 BEGIN
     -- Check if a calendar is available to a user
-    PERFORM check_user_calendar(user_id, calendar_id);
-    -- Delete event params
-    DELETE FROM pattern pat WHERE pat.event_id = $3;
-
-    UPDATE event SET rrule = get_rrule_from_jsonb(params) WHERE calendar_id = $2 AND id = $3;
-
-    INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
-    SELECT event_id, calendar_id, id, parameter_value
-    FROM get_parameters(params);
+    PERFORM check_user_calendar(e_user_id, e_calendar_id);
+    -- Select old rrule
+    SELECT rrule_json
+    FROM event e
+    WHERE e.calendar_id = e_calendar_id
+      AND e.id = e_event_id
+    INTO new_rrule_json;
+    -- Union params
+    new_rrule_json := new_rrule_json || params;
+    -- Update rrule in the event table
+    -- dt frame will be update by trigger
+    UPDATE event e
+    SET rrule_json=validate_rrule(new_rrule_json)
+    WHERE e.calendar_id = e_calendar_id
+      AND e.id = e_event_id;
 
     RETURN event_id;
 END;
 $Body$;
 end;
 
-CREATE OR REPLACE FUNCTION add_event_params(user_id int, calendar_id int, event_id int, params jsonb)
-    RETURNS integer
-    LANGUAGE plpgsql
-AS
-$Body$
-DECLARE
-BEGIN
-    -- Check if a calendar is available to a user
-    PERFORM check_user_calendar(user_id, calendar_id);
-
-    -- Insert new pattern to the event
-    INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
-    SELECT event_id, calendar_id, id, parameter_value
-    FROM get_parameters(params);
-
-    -- Update rrule in event table
-    UPDATE event SET rrule = get_rrule_from_jsonb(params) WHERE calendar_id = $2 AND id = $3;
-
-    RETURN event_id;
-END;
-$Body$;
-end;
-
--- Use to set/change rrule params
-CREATE TEMP TABLE params_resolved (id int, parameter_value text)
-    ON COMMIT DELETE ROWS;
 CREATE OR REPLACE FUNCTION set_event_params(user_id int, calendar_id int, event_id int, params jsonb)
     RETURNS integer
     LANGUAGE plpgsql
 AS
 $Body$
 DECLARE
+    e_user_id alias for $1;
+    e_calendar_id alias for $2;
+    e_event_id alias for $3;
+    params alias for $4;
+    dt_frame timestamp[2];
 BEGIN
     -- Check if a calendar is available to a user
-    PERFORM check_user_calendar(user_id, calendar_id);
-    -- Select id for params
-    INSERT INTO params_resolved SELECT id, parameter_value FROM get_parameters(params);
-    -- Delete old params
-    DELETE FROM pattern pat WHERE pat.event_id = $3 AND pat.parameter_id IN (SELECT id FROM params_resolved);
-    -- Insert new params
-    INSERT INTO pattern (event_id, calendar_id, parameter_id, parameter_value)
-    SELECT $3, $2, p_r.id, p_r.parameter_value
-    FROM params_resolved p_r;
-    -- Update rrule in event table
-    UPDATE event e SET rrule = get_rrule_from_jsonb(params) WHERE e.calendar_id = $2 AND e.id = $3;
-
+    PERFORM check_user_calendar(e_user_id, e_calendar_id);
+    -- Update rrule in the event table
+    -- dt frame will be update by trigger
+    UPDATE event e
+    SET rrule_json=validate_rrule(params)
+    WHERE e.calendar_id = e_calendar_id
+      AND e.id = e_event_id;
     RETURN event_id;
 END;
 $Body$;
 end;
+
+-- Trigger for updating dt frame corresponding to the rule
+CREATE FUNCTION dt_frame_update() RETURNS trigger AS
+$dt_frame_update$
+BEGIN
+    IF NEW.rrule_json IS NOT NULL AND (OLD.rrule_json != NEW.rrule_json OR OLD.rrule_json IS NULL) THEN
+        SELECT dt_start, dt_end
+        FROM get_dt_frame(NEW.dt_start, NEW.dt_end, NEW.rrule_json)
+        INTO NEW.dt_frame_start, NEW.dt_frame_end;
+    END IF;
+    RETURN NEW;
+END;
+$dt_frame_update$ LANGUAGE plpgsql;
+
+CREATE TRIGGER event_dt_frame_update
+    BEFORE INSERT OR UPDATE
+    ON event
+    FOR EACH ROW
+EXECUTE FUNCTION dt_frame_update();

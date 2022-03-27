@@ -26,7 +26,7 @@ CREATE TABLE event
     dt_frame_start timestamp,
     dt_frame_end   timestamp,
     duration       interval GENERATED ALWAYS AS (dt_end - dt_start) STORED,
-    rrule text,
+    rrule_json     jsonb,
     PRIMARY KEY (id, calendar_id)
 );
 CREATE TABLE parameters
@@ -35,15 +35,15 @@ CREATE TABLE parameters
     name text NOT NULL,
     type text NOT NULL
 );
-CREATE TABLE pattern
-(
-    event_id        integer                            NOT NULL,
-    calendar_id     integer                            NOT NULL,
-    parameter_id    integer REFERENCES parameters (id) NOT NULL,
-    parameter_value text                               NOT NULL,
-    CONSTRAINT pattern_pkey PRIMARY KEY (event_id, calendar_id, parameter_id, parameter_value),
-    FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
-);
+-- CREATE TABLE pattern
+-- (
+--     event_id        integer                            NOT NULL,
+--     calendar_id     integer                            NOT NULL,
+--     parameter_id    integer REFERENCES parameters (id) NOT NULL,
+--     parameter_value text                               NOT NULL,
+--     CONSTRAINT pattern_pkey PRIMARY KEY (event_id, calendar_id, parameter_id, parameter_value),
+--     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
+-- );
 CREATE TABLE exception_event
 (
     id          SERIAL PRIMARY KEY,
@@ -54,16 +54,19 @@ CREATE TABLE exception_event
     FOREIGN KEY (event_id, calendar_id) REFERENCES event (id, calendar_id)
 );
 INSERT INTO parameters (name, type)
-VALUES ('freq', 'integer'),
-       ('count', 'integer'),
-       ('until', 'date'),
-       ('interval', 'integer'),
-       ('bysecond', 'integer[]'),
-       ('byminute', 'integer[]'),
-       ('byhour', 'integer[]'),
-       ('byday', 'text[]'),
-       ('bymonth', 'integer[]'),
-       ('by_month_day', 'integer[]'),
-       ('wkst', 'text[]');
+VALUES ('FREQ', 'integer'),
+       ('COUNT', 'integer'),
+       ('UNTIL', 'date'),
+       ('INTERVAL', 'integer'),
+       ('BYSECOND', 'integer[]'),
+       ('BYMINUTE', 'integer[]'),
+       ('BYHOUR', 'integer[]'),
+       ('BYDAY', 'text[]'),
+       ('BYWEEKNO', 'integer[]'),
+       ('BYMONTH', 'integer[]'),
+       ('BYMONTHDAY', 'integer[]'),
+       ('BYYEARDAY', 'integer[]'),
+       ('BYSETPOS', 'integer[]'),
+       ('WKST', 'text[]');
 
-CREATE EXTENSION pg_rrule;
+-- CREATE EXTENSION pg_rrule;

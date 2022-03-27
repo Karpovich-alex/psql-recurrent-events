@@ -7,8 +7,6 @@ DECLARE
 BEGIN
     -- Check if a calendar is available to a user
     PERFORM check_user_calendar(user_id, calendar_id);
-    -- Delete pattern
-    DELETE FROM pattern pat WHERE pat.event_id = $3;
     -- Delete exception events
     DELETE FROM exception_event ex_e WHERE ex_e.calendar_id = $2 AND ex_e.event_id = $3;
     -- Delete event
