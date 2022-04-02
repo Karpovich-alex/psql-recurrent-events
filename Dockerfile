@@ -16,7 +16,7 @@ ENV QT_SELECT=qt5
 
 RUN mkdir /tmp/pg_rrule \
  && cd /tmp/pg_rrule \
- && wget https://github.com/ondrej-111/pg_rrule/archive/refs/heads/master.zip \
+ && wget https://github.com/Karpovich-alex/pg_rrule/archive/refs/heads/master.zip \
  && unzip master.zip -d /tmp/pg_rrule
 WORKDIR /tmp/pg_rrule/pg_rrule-master
 
@@ -40,5 +40,4 @@ RUN apt-get purge -y --auto-remove \
   wget \
  && rm -dr /tmp
 
-EXPOSE 5432
 CMD ["postgres"]
