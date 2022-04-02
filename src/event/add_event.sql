@@ -21,6 +21,7 @@ DECLARE
     dt_start alias for $5;
     dt_end alias for $6;
     params alias for $7;
+
     event_id       event.id%type := -1;
     dt_frame_start timestamp;
     dt_frame_end   timestamp;

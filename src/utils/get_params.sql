@@ -1,5 +1,3 @@
-DROP FUNCTION get_parameters(jsonb);
-
 CREATE OR REPLACE FUNCTION get_parameters(params jsonb)
     RETURNS TABLE
             (
@@ -23,8 +21,6 @@ BEGIN
 END;
 $Body$;
 end;
-
-DROP FUNCTION unnest_parameters(jsonb);
 
 CREATE OR REPLACE FUNCTION unnest_parameters(params jsonb)
     RETURNS TABLE

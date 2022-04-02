@@ -1,5 +1,4 @@
-DROP FUNCTION get_events_from_range(integer, integer, timestamp without time zone, timestamp without time zone);
-
+-- Returns instances of events that occur during a specific date period
 CREATE OR REPLACE FUNCTION get_events_from_range(
     user_id integer,
     e_calendar_id integer,
