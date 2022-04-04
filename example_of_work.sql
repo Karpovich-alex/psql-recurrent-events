@@ -46,11 +46,11 @@ FROM get_events_from_range_rrule(
     );
 
 SELECT add_exception_event(
-    1,
-    1,
-    1,
-    '20220315T090000'::timestamp,
-    '20220315T103000'::timestamp);
+               1,
+               1,
+               1,
+               '20220315T090000'::timestamp,
+               '20220315T103000'::timestamp);
 
 SELECT *
 FROM get_events_from_range(1, 1,
