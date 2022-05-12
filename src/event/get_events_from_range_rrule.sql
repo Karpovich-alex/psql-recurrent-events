@@ -49,12 +49,11 @@ BEGIN
                           FULL JOIN exception_event ex_e
                                     ON events.id = ex_e.event_id
                                         AND events.dt_end >= e_frame_dt_start
+                                        AND events.dt_start <= e_frame_dt_end
                                         AND events.calendar_id = ex_e.calendar_id
                                         AND events.dt_start = ex_e.dt_start
                                         AND events.dt_end = ex_e.dt_end
                  WHERE ex_e.event_id IS NULL
-                   AND events.dt_end >= e_frame_dt_start
-                   AND events.dt_start <= e_frame_dt_end
                  ORDER BY events.dt_start;
 END;
 $Body$;

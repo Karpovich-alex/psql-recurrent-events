@@ -12,6 +12,8 @@ DECLARE
 BEGIN
     -- Check if a calendar is available to a user
     PERFORM check_user_calendar(e_user_id, e_calendar_id);
+    -- Validate new params
+    SELECT validate_rrule(params) INTO params;
     -- Select old rrule
     SELECT rrule_json
     FROM event e
@@ -21,9 +23,9 @@ BEGIN
     -- Union params
     new_rrule_json := new_rrule_json || params;
     -- Update rrule in the event table
-    -- dt frame will be update by trigger
+    -- dt frame will be updated by trigger
     UPDATE event e
-    SET rrule_json = validate_rrule(new_rrule_json)
+    SET rrule_json = new_rrule_json
     WHERE e.calendar_id = e_calendar_id
       AND e.id = e_event_id;
 
@@ -45,10 +47,12 @@ DECLARE
 BEGIN
     -- Check if a calendar is available to a user
     PERFORM check_user_calendar(e_user_id, e_calendar_id);
+    -- Validate new params
+    SELECT validate_rrule(params) INTO params;
     -- Update rrule in the event table
     -- dt frame will be update by trigger
     UPDATE event e
-    SET rrule_json = validate_rrule(params)
+    SET rrule_json = params
     WHERE e.calendar_id = e_calendar_id
       AND e.id = e_event_id;
     RETURN event_id;

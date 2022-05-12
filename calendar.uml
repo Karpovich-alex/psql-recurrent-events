@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.calendar</OriginalElement>
+  <nodes>
+    <node x="376.9642857142858" y="66.99999999999997">aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.event</node>
+    <node x="395.9642857142858" y="526.0000000000001">aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.exception_event</node>
+    <node x="161.52017195767206" y="177.0">aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.calendar</node>
+    <node x="587.6630291005292" y="220.99999999999997">aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.parameters</node>
+    <node x="-28.76785714285711" y="215.21428571428572">aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.users_calendar</node>
+    <node x="-50.928571428571445" y="11.0">aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.users</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.users_calendar" target="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.calendar" relationship="REFERENCES">
+      <point x="32.482142857142776" y="-36.428571428571445" />
+      <point x="72.21428571428567" y="145.0" />
+      <point x="221.02017195767206" y="145.0" />
+      <point x="0.0" y="49.5" />
+    </edge>
+    <edge source="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.exception_event" target="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.event" relationship="REFERENCES">
+      <point x="-43.67857142857156" y="-70.71428571428578" />
+      <point x="420.7857142857142" y="474.42857142857144" />
+      <point x="420.7142857142858" y="474.42857142857144" />
+      <point x="-43.75" y="126.5" />
+    </edge>
+    <edge source="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.event" target="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.calendar" relationship="REFERENCES">
+      <point x="0.0" y="-126.5" />
+      <point x="464.4642857142858" y="143.57142857142856" />
+      <point x="251.02017195767206" y="143.57142857142856" />
+      <point x="251.02017195767206" y="223.05357142857144" />
+      <point x="221.02017195767206" y="223.05357142857144" />
+      <point x="0.0" y="49.5" />
+    </edge>
+    <edge source="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.users_calendar" target="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.users" relationship="REFERENCES">
+      <point x="-34.660714285714334" y="-40.71428571428572" />
+      <point x="0.0" y="38.5" />
+    </edge>
+    <edge source="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.exception_event" target="aa5ad9a7-dfa8-43b2-bdf9-277cd2dd2e97.TABLE:postgres.public.calendar" relationship="REFERENCES">
+      <point x="37.75" y="-59.28571428571445" />
+      <point x="502.2142857142858" y="597.5000000000002" />
+      <point x="221.02017195767206" y="597.5000000000002" />
+      <point x="0.0" y="49.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="0.7" showDependencies="false" x="235.78571428571433" y="332.5" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Comments</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

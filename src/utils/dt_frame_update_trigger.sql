@@ -2,7 +2,9 @@
 CREATE FUNCTION dt_frame_update() RETURNS trigger AS
 $dt_frame_update$
 BEGIN
-    IF NEW.rrule_json IS NOT NULL AND (OLD.rrule_json != NEW.rrule_json OR OLD.rrule_json IS NULL) THEN
+    IF NEW.rrule_json IS NOT NULL AND
+       (OLD.rrule_json != NEW.rrule_json OR OLD.rrule_json IS NULL OR
+        NEW.dt_start != OLD.dt_start OR NEW.dt_end != OLD.dt_end) THEN
         SELECT dt_start, dt_end
         FROM get_dt_frame(NEW.dt_start, NEW.dt_end, NEW.rrule_json)
         INTO NEW.dt_frame_start, NEW.dt_frame_end;
